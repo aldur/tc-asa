@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Transfer-controlled Algorand Standard Asset (ASA).
+Transfer-controlled Algorand Standard Asset (TC-ASA).
 
 Ties an ASA to an ASC (Algorand Smart Contract) and exposes methods to
 mint/burn/transfer.
@@ -431,6 +431,7 @@ def initialize_reserves(args: ABI.TealArgs):
     precondition = And(
         is_master(Txn.sender()),
         App.globalGet(Keys.asa) == Int(0),  # This prevents double initialization.
+        # TODO: Ensure that the ASA has correct roles and metadata set.
     )
     return Seq(
         Assert(precondition),
