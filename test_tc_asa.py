@@ -294,7 +294,7 @@ class TestFreezeUnfreeze:
 
     def test_freeze_unfreeze_bad_flag(self, opted_in_user, asc_idx):
         _ = asc_idx
-        with pytest.raises(AlgodHTTPError):
+        with pytest.raises(AssertionError):
             # Invalid flag
             abi_call(
                 opted_in_user,

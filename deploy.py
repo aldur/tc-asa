@@ -5,12 +5,15 @@ from __future__ import annotations
 import base64
 import dataclasses
 import json
-import time
 from typing import Any, Optional, Union, cast
 
 import algosdk
+from algosdk.abi import Method
 from algosdk import encoding, mnemonic, util
-from algosdk.abi import StringType
+from algosdk.atomic_transaction_composer import (
+    AtomicTransactionComposer,
+    TransactionSigner,
+)
 from algosdk.future import transaction
 from algosdk.kmd import KMDClient
 from algosdk.v2client import algod, indexer
@@ -41,6 +44,7 @@ ASSET_DECIMALS = 6
 FUND_ACCOUNT_ALGOS = util.algos_to_microalgos(100)  # Algos
 
 FLAT_FEE = 1000
+MAX_WAIT_ROUNDS = 10
 
 algod_client = algod.AlgodClient(algod_token=ALGOD_TOKEN, algod_address=ALGOD_ADDRESS)
 kmd_client = KMDClient(kmd_token=KMD_TOKEN, kmd_address=KMD_ADDRESS)
@@ -49,8 +53,8 @@ indexer_client = indexer.IndexerClient(
 )
 
 
-@dataclasses.dataclass
-class Account:
+@dataclasses.dataclass(frozen=True)
+class Account(TransactionSigner):
     address: str
     private_key: Optional[
         str
@@ -75,6 +79,14 @@ class Account:
     @property
     def decoded_address(self):
         return encoding.decode_address(self.address)
+
+    def sign_transactions(
+        self, txn_group: list[transaction.Transaction], indexes: list[int]
+    ) -> list:
+        # Enables using `self` with `AtomicTransactionComposer`
+        for i in indexes:
+            txn_group[i] = sign(self, txn_group[i])  # type: ignore
+        return txn_group
 
 
 def get_params(client):
@@ -332,67 +344,32 @@ def abi_call(
     `group_senders_txns` allows tailing other transactions to the ABI call in a
     group; expects an iterable of pairs (sender, transaction).
     """
-    interface = method.interface
     params = get_params(algod_client)
 
-    foreign_accounts = []
-    foreign_assets = []
-    app_args = [method.selector]
+    encoded_args = []
+    for arg in args:
+        if isinstance(arg, Account):
+            encoded_args.append(arg.address)
+        else:
+            encoded_args.append(arg)
 
-    # TODO: Encoding might re-use foreign elements (accounts) more than once.
-    # This can be made more efficient.
+    atc = AtomicTransactionComposer()
+    atc.add_method_call(
+        app_id=method.asc_id,
+        method=Method.from_signature(method.signature),
+        method_args=encoded_args,
+        sp=params,
+        sender=sender.address,
+        signer=sender,
+    )
+    atc.build_group()
+    atc_result = atc.execute(algod_client, MAX_WAIT_ROUNDS)
 
-    assert len(interface.args) == len(args)
-    for i, iarg in enumerate(interface.args):
-        # Here we encode the arguments for the ABI.
-        # TODO: For now, we don't encode int to bytes.
-        if iarg.type == "account":
-            app_args.append(len(foreign_accounts) + 1)
-            foreign_accounts.append(args[i].address)
-        elif iarg.type == "asset":
-            app_args.append(len(foreign_assets))
-            foreign_assets.append(args[i])
-        elif iarg.type == "bool":
-            app_args.append(0x80 if args[i] else 0x00)
-        elif iarg.type == "uint64":
-            app_args.append(int(args[i]))
-        elif iarg.type == "string":
-            app_args.append(StringType().encode(args[i]))
-        else:  # Default to byte encoding.
-            app_args.append(args[i])
+    logged_result = atc_result.abi_results[0]  # type: ignore
+    if not logged_result or not logged_result.return_value:
+        return atc_result.tx_ids[0]
 
-    txns = [
-        transaction.ApplicationNoOpTxn(
-            sender=sender.address,
-            sp=params,
-            index=method.asc_id,
-            app_args=app_args,
-            accounts=foreign_accounts,
-            foreign_assets=foreign_assets,
-        )
-    ]  # type: ignore
-
-    senders = [sender] * len(txns)
-
-    tx_info = group_sign_send(senders, txns)
-    if interface.returns.type == "void":
-        return tx_info  # Useful for debugging.
-
-    logs = tx_info.get("logs")
-    assert logs, "Was supposed to log, but did not."
-    returned_log = base64.b64decode(logs[0])
-
-    assert returned_log[:4] == bytes.fromhex(
-        "151f7c75"
-    )  # Literally hash('return')[:4])
-    returned_log = returned_log[4:]
-
-    if interface.returns.type.startswith("uint"):
-        return int.from_bytes(returned_log, "big")
-    if interface.returns.type == "bool":
-        return bool(int.from_bytes(returned_log, "big"))
-
-    return returned_log  # Fallback to returning raw bytes.
+    return logged_result.return_value
 
 
 def deploy():
