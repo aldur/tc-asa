@@ -16,7 +16,7 @@ from algosdk.atomic_transaction_composer import (
 )
 from algosdk.future import transaction
 from algosdk.kmd import KMDClient
-from algosdk.v2client import algod, indexer
+from algosdk.v2client import algod
 from algosdk.wallet import Wallet
 
 from state import AVMState
@@ -34,8 +34,6 @@ ALGOD_ADDRESS = "http://localhost:4001"
 ALGOD_TOKEN = "a" * 64
 KMD_ADDRESS = "http://localhost:4002"
 KMD_TOKEN = ALGOD_TOKEN
-INDEXER_ADDRESS = "http://localhost:8980"
-INDEXER_TOKEN = ALGOD_TOKEN
 
 ASSET_UNIT_NAME = "TC-ASA"
 ASSET_NAME = "TCASA"
@@ -48,9 +46,6 @@ MAX_WAIT_ROUNDS = 10
 
 algod_client = algod.AlgodClient(algod_token=ALGOD_TOKEN, algod_address=ALGOD_ADDRESS)
 kmd_client = KMDClient(kmd_token=KMD_TOKEN, kmd_address=KMD_ADDRESS)
-indexer_client = indexer.IndexerClient(
-    indexer_token=INDEXER_TOKEN, indexer_address=INDEXER_ADDRESS
-)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -197,12 +192,6 @@ def optin_to_application(account: Account, app_id: int):
     return sign_send_wait(account, txn)
 
 
-def close_out_application(account, app_id):
-    params = get_params(algod_client)
-    txn = transaction.ApplicationCloseOutTxn(account.address, params, app_id)
-    return sign_send_wait(account, txn)
-
-
 def find_sandbox_faucet() -> Account:
     default_wallet_name = kmd_client.list_wallets()[0]["name"]
     wallet = Wallet(
@@ -234,21 +223,6 @@ def fund(faucet: Account, receiver: Account, amount=FUND_ACCOUNT_ALGOS):
     params = get_params(algod_client)
     txn = transaction.PaymentTxn(faucet.address, params, receiver.address, amount)
     return sign_send_wait(faucet, txn)
-
-
-def group_sign_send(signers, txns):
-    assert len(signers) == len(txns)
-    signed_group = []
-    gid = transaction.calculate_group_id(txns)
-
-    for signer, t in zip(signers, txns):
-        t.group = gid
-        signed_group.append(sign(signer, t))
-
-    transaction.write_to_file(signed_group, "/tmp/txn.signed", overwrite=True)
-
-    gtxn_id = algod_client.send_transactions(signed_group)
-    return wait_for_confirmation(algod_client, gtxn_id)
 
 
 def app_idx_to_account(app_idx: int) -> Account:

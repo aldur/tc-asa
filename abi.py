@@ -16,7 +16,6 @@ from Cryptodome.Hash import SHA512
 
 from pyteal import (
     Btoi,
-    Bytes,
     Expr,
     Int,
     Txn,
@@ -33,7 +32,6 @@ class ABI:
 
     ON_CALL_NUM_APP_ARGS = 1  # ARC-4 ABI: Selector.
     DISPATCH_TABLE = {}  # Maps selectors to decorated Python functions (the methods).
-    RETURN_PREFIX = Bytes("base16", "0x151f7c75")  # Literally hash('return')[:4]
 
     TRUE = 0x80
     FALSE = 0x0

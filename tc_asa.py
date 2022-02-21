@@ -19,13 +19,11 @@ from pyteal import (
     Assert,
     AssetHolding,
     Bytes,
-    Concat,
     Cond,
     Expr,
     Global,
     InnerTxnBuilder,
     Int,
-    Log,
     Mode,
     Not,
     OnComplete,
@@ -64,10 +62,6 @@ class LocalConfig(AVMState):
 
 Keys = Config.to_keys_factory("Keys")()
 LocalKeys = LocalConfig.to_keys_factory("LocalKeys")()
-
-
-def log_return(return_expr: Expr) -> Expr:
-    return Log(Concat(ABI.RETURN_PREFIX, return_expr))
 
 
 TC_ASA_RESERVE = Global.current_application_address()
