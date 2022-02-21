@@ -17,7 +17,7 @@ from tc_asa import (
     burn,
     compile_stateful,
     set_freeze_unfreeze_token,
-    initialize_reserves,
+    init,
     set_lock_unlock,
     mint,
     transfer,
@@ -80,9 +80,9 @@ def test_config():
     dataclasses.asdict(Keys)
 
 
-def test_compile():
+def test_compile(path="/tmp/contract.teal"):
     # This test simply ensures we can compile the ASC
-    with open("/tmp/contract.teal", "w") as f:
+    with open(path, "w") as f:
         f.write(compile_stateful(asc_approval(dummy_config)))
 
 
@@ -148,10 +148,10 @@ def config(request):
 def _initialize_reserves(master, asc_idx, asa_idx):
     previous_balance = get_account_asa_balance(master, asa_idx)
 
-    abi_call(master, initialize_reserves, asa_idx)
+    abi_call(master, init, asa_idx)
     with pytest.raises(AlgodHTTPError):
         # Can't initialize twice.
-        abi_call(master, initialize_reserves, asa_idx)
+        abi_call(master, init, asa_idx)
 
     current_balance = get_account_asa_balance(master, asa_idx)
     assert current_balance == 0

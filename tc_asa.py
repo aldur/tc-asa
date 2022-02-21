@@ -7,7 +7,7 @@ Transfer-controlled Algorand Standard Asset (TC-ASA).
 Ties an ASA to an ASC (Algorand Smart Contract) and exposes methods to
 mint/burn/transfer.
 
-Allows providing custom logic around transfers.
+Enables custom / extended logic around transfers.
 """
 
 import dataclasses
@@ -412,8 +412,8 @@ def asset_is_tc_asa(e: Expr) -> Expr:
 
 
 INITIALIZE_RESERVES_INTERFACE = {
-    "name": "initializeReserves",
-    "desc": "This method allows transferring the TC-ASA and role ASA reserves into the ASC.",
+    "name": "init",
+    "desc": "Transfer the ASA reserve into the ASC.",
     "args": [
         {
             "name": "asset",
@@ -426,12 +426,36 @@ INITIALIZE_RESERVES_INTERFACE = {
 
 
 @ABI.method(INITIALIZE_RESERVES_INTERFACE)
-def initialize_reserves(args: ABI.TealArgs):
+def init(args: ABI.TealArgs):
     current_app_address = Global.current_application_address()
     precondition = And(
         is_master(Txn.sender()),
         App.globalGet(Keys.asa) == Int(0),  # This prevents double initialization.
-        # TODO: Ensure that the ASA has correct roles and metadata set.
+        Seq(
+            asset_clawback := AssetParam.clawback(args.asset),
+            Assert(asset_clawback.hasValue()),
+            asset_clawback.value() == TC_ASA_RESERVE,
+        ),
+        Seq(
+            asset_freeze := AssetParam.freeze(args.asset),
+            Assert(asset_freeze.hasValue()),
+            asset_freeze.value() == TC_ASA_RESERVE,
+        ),
+        Seq(
+            asset_manager := AssetParam.manager(args.asset),
+            Assert(asset_manager.hasValue()),
+            asset_manager.value() == TC_ASA_RESERVE,
+        ),
+        Seq(
+            asset_reserve := AssetParam.reserve(args.asset),
+            Assert(asset_reserve.hasValue()),
+            asset_reserve.value() == TC_ASA_RESERVE,
+        ),
+        Seq(
+            asset_default_frozen := AssetParam.defaultFrozen(args.asset),
+            Assert(asset_default_frozen.hasValue()),
+            asset_default_frozen.value() == Int(1),
+        ),
     )
     return Seq(
         Assert(precondition),
@@ -523,6 +547,7 @@ def compile_stateful(program) -> str:
 
 if __name__ == "__main__":
     # Allow quickly testing compilation.
-    from test_tc_asa import test_compile
-
-    test_compile()
+    path = "/tmp/tc_asa.teal"
+    with open(path, "w") as f:
+        print(f"Writing compiled TC-ASA to '{path}'.")
+        f.write(compile_stateful(asc_approval(Config(master=AVMState.Address("Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA")))))

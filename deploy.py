@@ -26,7 +26,7 @@ from tc_asa import (
     LocalConfig,
     asc_approval,
     compile_stateful,
-    initialize_reserves,
+    init,
     on_closeout_or_clear,
 )
 
@@ -369,7 +369,7 @@ def deploy():
     asa_idx = create_tc_asa(master, asc_idx)
     print(f" --- 🥇  Created TC-ASA: {asa_idx}.")
 
-    abi_call(master, initialize_reserves, asa_idx)
+    abi_call(master, init, asa_idx)
     print(" --- 🥇  Tied together the ASA into the ASC for the TC-ASA.")
 
     user = create_and_fund(faucet)
