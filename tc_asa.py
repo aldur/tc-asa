@@ -500,7 +500,7 @@ def on_delete(_: Config) -> Expr:
 
 
 def on_closeout_or_clear(_: Config) -> Expr:
-    return Seq(Approve())
+    return Seq(Reject())
 
 
 def asc_approval(cfg: Config) -> Expr:
