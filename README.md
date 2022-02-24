@@ -64,7 +64,7 @@ to the ASC `creator`:
 
 - `master` only can update the ASC.
 - Anyone can `opt-in` to the ASC.
-- `closeout`, `clear` and `delete` have not been implemented.
+- `closeout`, `clear` and `delete` will `reject` any transaction.
   - WARNING: Clearing the application state for a user with outstanding funds
     will prevent them from calling `transfer`.
 
