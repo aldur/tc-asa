@@ -51,7 +51,7 @@ class Config(AVMState):
     is_frozen: AVMState.UInt = AVMState.UInt(0)
 
     # Corresponding ASA token
-    asa: AVMState.UInt = AVMState.UInt(0)  # Wil be set by `initializeReserves`
+    asa: AVMState.UInt = AVMState.UInt(0)  # Wil be set by `init`
 
 
 @dataclasses.dataclass
@@ -411,7 +411,7 @@ def asset_is_tc_asa(e: Expr) -> Expr:
     return e == App.globalGet(Keys.asa)
 
 
-INITIALIZE_RESERVES_INTERFACE = {
+INIT_INTERFACE = {
     "name": "init",
     "desc": "Transfer the ASA reserve into the ASC.",
     "args": [
@@ -425,7 +425,7 @@ INITIALIZE_RESERVES_INTERFACE = {
 }
 
 
-@ABI.method(INITIALIZE_RESERVES_INTERFACE)
+@ABI.method(INIT_INTERFACE)
 def init(args: ABI.TealArgs):
     current_app_address = Global.current_application_address()
     precondition = And(
