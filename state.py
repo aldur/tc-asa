@@ -42,8 +42,8 @@ class AVMState:
         return f.name
 
     @classmethod
-    def to_keys_factory(cls, name):
-        """Map dataclass fields to TEAL Bytes (for ASC state)."""
+    def to_keys(cls, name):
+        """Map dataclass field names into TEAL Bytes (for ASC state)."""
         return dataclasses.make_dataclass(
             name,
             [
@@ -58,7 +58,7 @@ class AVMState:
                 for f in dataclasses.fields(cls)
             ],
             frozen=True,
-        )
+        )()
 
     def __str__(self):
         """Pretty print as a dictionary."""

@@ -60,8 +60,8 @@ class LocalConfig(AVMState):
     is_whitelisted: AVMState.UInt = AVMState.UInt(0)
 
 
-Keys = Config.to_keys_factory("Keys")()
-LocalKeys = LocalConfig.to_keys_factory("LocalKeys")()
+Keys = Config.to_keys("Keys")
+LocalKeys = LocalConfig.to_keys("LocalKeys")
 
 
 TC_ASA_RESERVE = Global.current_application_address()
