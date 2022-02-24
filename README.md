@@ -2,7 +2,7 @@
 
 Reference implementation for a Transfer-controlled Algorand Standard Asset
 (TC-ASA), which extends an ASA to provide custom or more granular control around
-`transfer`, `mint` and `burn` operations. Think of it like Algorand's ERC-20.
+`transfer`, `mint` and `burn` operations.
 
 It implements the following:
 
@@ -70,6 +70,10 @@ to the ASC `creator`:
 
 ## Usage
 
+WARNING: This implementation has not been security-audited.
+
+### Reference Implementation
+
 - The file `tc_asa.py` provides the PyTeal implementation and, if executed,
   writes the TEAL contract to `/tmp/tc_asa.teal`.
 - The file `deploy.py` provides helpers to deploy the ASA and the ASC to the
@@ -78,9 +82,13 @@ to the ASC `creator`:
     [sandbox](https://github.com/algorand/sandbox) endpoints.
   - Will print the JSON ABI specification to `/tmp/contract.json`.
 
-WARNING: This implementation has not been security-audited.
+### Customization
+
+Use the `@ABI.method(interface: dict)` decorator to add new methods to the
+contract. `interface` must be a Python dictionary encoding an [ARC-4 method
+description](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0004.md#method-description).
 
 ## Authors
 
-- Adriano Di Luzio (@aldur)
-- Cosimo Bassi (@cusma)
+- Adriano Di Luzio ([@aldur](https://github.com/aldur))
+- Cosimo Bassi ([@cusma](https://github.com/cusma))
