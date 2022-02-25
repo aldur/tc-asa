@@ -16,6 +16,7 @@ e.g.:
 - Restricting the minimum or maximum balance per user, the overall number of
   token holders, etc.
 - Implementing vesting or minimum lock periods.
+- Enabling allowance.
 
 ## Design
 
