@@ -247,7 +247,7 @@ def opted_out_user(faucet):
 
 @pytest.fixture
 def minimum_mint_quantity() -> int:
-    return int(5 * 10 ** 6)
+    return int(5 * 10**6)
 
 
 class TestLockUnlock:
