@@ -37,7 +37,7 @@ KMD_TOKEN = ALGOD_TOKEN
 
 ASSET_UNIT_NAME = "TC-ASA"
 ASSET_NAME = "TCASA"
-ASSET_TOTAL = int(2 ** 64 - 1)
+ASSET_TOTAL = int(2**64 - 1)
 ASSET_DECIMALS = 6
 FUND_ACCOUNT_ALGOS = util.algos_to_microalgos(100)  # Algos
 

@@ -550,4 +550,14 @@ if __name__ == "__main__":
     path = "/tmp/tc_asa.teal"
     with open(path, "w") as f:
         print(f"Writing compiled TC-ASA to '{path}'.")
-        f.write(compile_stateful(asc_approval(Config(master=AVMState.Address("Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA")))))
+        f.write(
+            compile_stateful(
+                asc_approval(
+                    Config(
+                        master=AVMState.Address(
+                            "Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA"
+                        )
+                    )
+                )
+            )
+        )
