@@ -37,9 +37,12 @@ jobs:
     - name: Clone Algorand Sanbox
       run: cd .. && git clone https://github.com/algorand/sandbox.git
 
+    - name: Disabling Indexer in Sandbox config.lightdev
+      run: cd ../sandbox && sed 's/INDEXER_DISABLED=""/INDEXER_DISABLED="True"/g' config.dev > config.lightdev
+
     - name: Run Algorand Sandbox
       shell: 'script -q -e -c "bash {0}"' # hacky hack to make TTY work
-      run: cd ../sandbox && ./sandbox up dev
+      run: cd ../sandbox && ./sandbox up lightdev
 
     - name: Delay before testing
       run: sleep 60
