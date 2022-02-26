@@ -37,6 +37,9 @@ jobs:
     - name: Clone Algorand Sanbox
       run: cd .. && git clone https://github.com/algorand/sandbox.git
 
+    - name: Copy Sandbox config file
+      run: cd ../sandbox && sed -i '' 's/INDEXER_DISABLED=""/INDEXER_DISABLED="True"/g' config.dev
+
     - name: Run Algorand Sandbox
       shell: 'script -q -e -c "bash {0}"' # hacky hack to make TTY work
       run: cd ../sandbox && ./sandbox up dev -v
