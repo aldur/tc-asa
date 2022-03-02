@@ -5,6 +5,8 @@
 
 import dataclasses
 
+import base64
+
 from algosdk.error import AlgodHTTPError
 import pytest
 
