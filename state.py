@@ -19,17 +19,11 @@ class AVMState:
     class UInt(int):
         """A `int` that will be encoded as a UInt in TEAL."""
 
-        pass
-
     class Address(str):
         """A `str` that will be encoded as an address in TEAL."""
 
-        pass
-
     class Bytes(bytes):
         """UTF-8 `bytes` that will be encoded as Bytes in TEAL."""
-
-        pass
 
     @classmethod
     def field_to_key(cls, f: dataclasses.Field) -> str:
