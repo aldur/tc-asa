@@ -497,9 +497,7 @@ def on_create(cfg: Config) -> Expr:
 
 def on_call(_: Config) -> Expr:
     precondition = And(
-        Txn.type_enum() == TxnType.ApplicationCall,  # Pedantic.
         Txn.application_args.length() >= Int(ABI.ON_CALL_NUM_APP_ARGS),
-        Txn.rekey_to() == Global.zero_address(),  # Pedantic.
     )
 
     selector = Txn.application_args[ABI.ON_CALL_NUM_APP_ARGS - 1]
