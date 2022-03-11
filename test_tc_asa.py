@@ -25,6 +25,9 @@ from tc_asa import (
 )
 
 from deploy import (
+    MIN_FLAT_FEE,
+    SC_MIN_BALANCE,
+    WITH_INNER_TXN_FEE,
     Account,
     abi_call,
     app_idx_to_account,
@@ -32,7 +35,6 @@ from deploy import (
     create_application,
     create_tc_asa,
     find_sandbox_faucet,
-    fund,
     get_account_asa_balance,
     get_account_balance,
     get_application_state,
@@ -148,7 +150,12 @@ def config(request):
 def _initialize_reserves(master, asc_idx, asa_idx):
     previous_balance = get_account_asa_balance(master, asa_idx)
 
-    abi_call(master, init, asa_idx)
+    with pytest.raises(AlgodHTTPError):
+        # Not enough feees
+        abi_call(master, init, asa_idx)
+
+    abi_call(master, init, asa_idx, fee=MIN_FLAT_FEE * 3)
+
     with pytest.raises(AlgodHTTPError):
         # Can't initialize twice.
         abi_call(master, init, asa_idx)
@@ -159,18 +166,15 @@ def _initialize_reserves(master, asc_idx, asa_idx):
         get_account_asa_balance(app_idx_to_account(asc_idx), asa_idx)
         == previous_balance
     )
+    assert get_account_balance(app_idx_to_account(asc_idx))[0] == SC_MIN_BALANCE
 
 
 @pytest.fixture()
-def asa_asc_indexes(config, master, faucet) -> tuple[int, int]:
+def asa_asc_indexes(config, master) -> tuple[int, int]:
     config.master = master.address  # type: ignore
-    asc_idx = create_application(master, config)
-
-    for m in ABI.DISPATCH_TABLE.values():
-        m.asc_id = asc_idx
-
-    app_account = app_idx_to_account(asc_idx)
-    fund(faucet, app_account)
+    app_account = create_application(master, config)
+    asc_idx = app_account.app
+    assert asc_idx
     print(
         f" --- 🔧 Created and funded ASC: {asc_idx} with address {app_account.address}."
     )
@@ -393,11 +397,7 @@ def funded_user(funded_user_factory):
 def mint_call(master, asa_idx):
     def _partial(target, amount, sender=None):
         return abi_call(
-            sender or master,
-            mint,
-            target,
-            amount,
-            asa_idx,
+            sender or master, mint, target, amount, asa_idx, fee=WITH_INNER_TXN_FEE
         )
 
     return _partial
@@ -681,11 +681,7 @@ class TestTransfer:
 def transfer_call(asa_idx):
     def _partial(source, target, amount):
         return abi_call(
-            source,
-            transfer,
-            target,
-            amount,
-            asa_idx,
+            source, transfer, target, amount, asa_idx, fee=WITH_INNER_TXN_FEE
         )
 
     return _partial
@@ -695,11 +691,7 @@ def transfer_call(asa_idx):
 def burn_call(master, asa_idx):
     def _partial(target, amount, sender=None):
         return abi_call(
-            sender or master,
-            burn,
-            target,
-            amount,
-            asa_idx,
+            sender or master, burn, target, amount, asa_idx, fee=WITH_INNER_TXN_FEE
         )
 
     return _partial

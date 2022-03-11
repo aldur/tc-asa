@@ -41,7 +41,9 @@ ASSET_TOTAL = int(2**64 - 1)
 ASSET_DECIMALS = 6
 FUND_ACCOUNT_ALGOS = util.algos_to_microalgos(100)  # Algos
 
-FLAT_FEE = 1000
+MIN_FLAT_FEE = util.algos_to_microalgos(0.001)
+WITH_INNER_TXN_FEE = MIN_FLAT_FEE * 2
+SC_MIN_BALANCE = util.algos_to_microalgos(0.1 * 2)
 MAX_WAIT_ROUNDS = 10
 
 algod_client = algod.AlgodClient(algod_token=ALGOD_TOKEN, algod_address=ALGOD_ADDRESS)
@@ -84,10 +86,10 @@ class Account(TransactionSigner):
         return txn_group
 
 
-def get_params(client):
+def get_params(client: algod.AlgodClient, fee=None) -> transaction.SuggestedParams:
     params = client.suggested_params()
     params.flat_fee = True
-    params.fee = FLAT_FEE
+    params.fee = fee or MIN_FLAT_FEE
 
     return params
 
@@ -238,7 +240,7 @@ def app_idx_to_account(app_idx: int) -> Account:
     )
 
 
-def create_application(master: Account, cfg: Config) -> int:
+def create_application(master: Account, cfg: Config) -> Account:
     """Deploy an ASC1 and return its index."""
     global_schema = transaction.StateSchema(Config.n_uints(), Config.n_bytes())
     local_schema = transaction.StateSchema(LocalConfig.n_uints(), LocalConfig.n_bytes())
@@ -261,7 +263,14 @@ def create_application(master: Account, cfg: Config) -> int:
     )
 
     transaction_response = sign_send_wait(master, txn)
-    return transaction_response["application-index"]
+    asc_idx = transaction_response["application-index"]
+
+    for m in ABI.DISPATCH_TABLE.values():
+        m.asc_id = asc_idx
+
+    app_account = app_idx_to_account(asc_idx)
+    fund(master, app_account, amount=SC_MIN_BALANCE)
+    return app_account
 
 
 def decode_state(state):
@@ -309,6 +318,7 @@ def abi_call(
     sender: Account,
     method,
     *args,
+    fee: Optional[int] = None,
 ) -> Any:  # TODO: Correctly specify the return type here.
     """
     ABI call from `sender` to `method`, with `*args`
@@ -318,7 +328,7 @@ def abi_call(
     `group_senders_txns` allows tailing other transactions to the ABI call in a
     group; expects an iterable of pairs (sender, transaction).
     """
-    params = get_params(algod_client)
+    params = get_params(algod_client, fee)
 
     encoded_args = []
     for arg in args:
@@ -355,13 +365,10 @@ def deploy():
     print(f" --- 💼  Master account mnemonic:\n{master.mnemonic()}")
 
     config = Config(master=AVMState.Address(master.address))
-    asc_idx = create_application(master, config)
 
-    for m in ABI.DISPATCH_TABLE.values():
-        m.asc_id = asc_idx
-
-    app_account = app_idx_to_account(asc_idx)
-    fund(faucet, app_account)
+    app_account = create_application(master, config)
+    asc_idx = app_account.app
+    assert asc_idx  # `Account.app` is Optional, this puts the linter at rest.
     print(
         f" --- 🔧  Created and funded ASC: {asc_idx} with address {app_account.address}."
     )

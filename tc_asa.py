@@ -260,7 +260,7 @@ def mint(args: ABI.TealArgs) -> Expr:
         InnerTxnBuilder.SetField(TxnField.asset_amount, amount),
         InnerTxnBuilder.SetField(TxnField.asset_receiver, user),
         InnerTxnBuilder.SetField(TxnField.asset_sender, TC_ASA_RESERVE),
-        # TODO: Fees?
+        InnerTxnBuilder.SetField(TxnField.fee, Int(0)),
         InnerTxnBuilder.Submit(),
     ]
 
@@ -319,7 +319,7 @@ def burn(args: ABI.TealArgs) -> Expr:
         InnerTxnBuilder.SetField(TxnField.asset_amount, amount),
         InnerTxnBuilder.SetField(TxnField.asset_sender, user),
         InnerTxnBuilder.SetField(TxnField.asset_receiver, TC_ASA_RESERVE),
-        # TODO: Fees?
+        InnerTxnBuilder.SetField(TxnField.fee, Int(0)),
         InnerTxnBuilder.Submit(),
     ]
 
@@ -395,7 +395,7 @@ def transfer(args: ABI.TealArgs) -> Expr:
         InnerTxnBuilder.SetField(TxnField.asset_amount, amount),
         InnerTxnBuilder.SetField(TxnField.asset_receiver, receiver),
         InnerTxnBuilder.SetField(TxnField.asset_sender, Txn.sender()),
-        # TODO: Fees?
+        InnerTxnBuilder.SetField(TxnField.fee, Int(0)),
         InnerTxnBuilder.Submit(),
     ]
 
