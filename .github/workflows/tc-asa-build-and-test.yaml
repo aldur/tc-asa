@@ -10,22 +10,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.9.10
-
     - name: Install pipenv
       run: |
         python -m pip install --upgrade pipenv wheel
-    - id: cache-pipenv
-      uses: actions/cache@v1
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
       with:
-        path: ~/.local/share/virtualenvs
-        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+        python-version: 3.9.10
+        cache: 'pipenv'
 
     - name: Install dependencies
-      if: steps.cache-pipenv.outputs.cache-hit != 'true'
       run: |
         pipenv install --deploy --dev
 
@@ -34,18 +29,11 @@ jobs:
       with:
         extra_args: --all-files
 
-    - name: Clone Algorand Sanbox
-      run: cd .. && git clone https://github.com/algorand/sandbox.git
+    - name: Run Algorand sandbox
+      run: docker run -d -p 4001:4001 -p 4002:4002 makerxau/algorand-sandbox-dev
 
-    - name: Disabling Indexer in Sandbox config.lightdev
-      run: cd ../sandbox && sed 's/INDEXER_DISABLED=""/INDEXER_DISABLED="True"/g' config.dev > config.lightdev
-
-    - name: Run Algorand Sandbox
-      shell: 'script -q -e -c "bash {0}"' # hacky hack to make TTY work
-      run: cd ../sandbox && ./sandbox up lightdev
-
-    - name: Delay before testing
-      run: sleep 60
+    - name: Sleep to allow the sandbox to start
+      run: sleep 10
 
     - name: Run pytest
       run: pipenv run pytest
