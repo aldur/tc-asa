@@ -40,7 +40,7 @@ from pyteal.ast.asset import AssetParam
 from state import AVMState
 from abi import ABI
 
-TEAL_VERSION = 5
+TEAL_VERSION = 6
 
 
 @dataclasses.dataclass
