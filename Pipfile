@@ -10,6 +10,7 @@ pyteal = "*"
 [dev-packages]
 pytest = "*"
 black = "*"
+autoflake = "*"
 
 [requires]
 python_version = "3.9"
