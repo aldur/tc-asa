@@ -8,7 +8,7 @@ py-algorand-sdk = "*"
 pyteal = "*"
 
 [dev-packages]
-pytest = "*"
+pytest = ">=7.2.0"
 black = "*"
 autoflake = "*"
 
