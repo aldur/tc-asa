@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-py-algorand-sdk = "*"
+py-algorand-sdk = "==1.20.2"
 pyteal = "*"
 
 [dev-packages]

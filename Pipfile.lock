@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "19a401926446d3fe5ccaa166140b9fe68a96cf0ea1bebbcc1c6d50963361d0d1"
+            "sha256": "ac537c5353ba7a83a15af331825c0df60c6f42bfbaac21f6abd5aba5e71d92f4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -152,11 +152,11 @@
         },
         "py-algorand-sdk": {
             "hashes": [
-                "sha256:40f10ccb2857acd3afce142827dd54c5f4d19bd6c1aeb74a6f1033d6c2885073",
-                "sha256:a801bb094b83f1501a27d296e55645505bde2aae351912abb2f555f2da45727a"
+                "sha256:37079777a2eb3883f0001e0daa3eacdb7dcc0dbca5ae470ec11bbdf6acd4872f",
+                "sha256:ee5c999c5209fe5a5be8fd8b5fff16009187fc61cfd4714782e676c985aa163c"
             ],
             "index": "pypi",
-            "version": "==2.0.0"
+            "version": "==1.20.2"
         },
         "pycparser": {
             "hashes": [
@@ -222,11 +222,11 @@
         },
         "pyteal": {
             "hashes": [
-                "sha256:308dab84bc9ea771bd38cecebb35affd48b19e163ee277e9ae9976a281ccaa4d",
-                "sha256:d1fe6b6ffe6429fefacd766f02eb117075d2cb1385da443e3881dbd76a6a3cd4"
+                "sha256:75e64c820944f5602b0e16cfef36d4edf77d4c6543de3bc8d368412c5a8d00d3",
+                "sha256:d1c2125b5af07e3b5d845e8df27084e628b59f1deacda751a8f1ee281a58d7f8"
             ],
             "index": "pypi",
-            "version": "==0.22.0"
+            "version": "==0.20.1"
         },
         "semantic-version": {
             "hashes": [
